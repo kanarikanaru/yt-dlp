@@ -1540,6 +1540,7 @@ class YoutubeDL:
                 if timestamp is not None:
                     with contextlib.suppress(ValueError, OverflowError, OSError):
                         date = dt.datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d')
+                        info_dict.setdefault('upload_date', date)
             if date is not None:
                 date_range = self.params.get('daterange', DateRange())
                 if date not in date_range:
