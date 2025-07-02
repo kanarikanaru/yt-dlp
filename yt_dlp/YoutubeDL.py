@@ -776,6 +776,13 @@ class YoutubeDL:
         else:
             self.params['nooverwrites'] = not self.params['overwrites']
 
+        if 'daterange' not in self.params:
+            if self.params.get('date') is not None:
+                self.params['daterange'] = DateRange.day(self.params['date'])
+            elif any(k in self.params for k in ('dateafter', 'datebefore')):
+                self.params['daterange'] = DateRange(
+                    self.params.get('dateafter'), self.params.get('datebefore'))
+
         if self.params.get('simulate') is None and any((
             self.params.get('list_thumbnails'),
             self.params.get('listformats'),
