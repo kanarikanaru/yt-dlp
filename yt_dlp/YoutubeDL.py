@@ -1535,6 +1535,11 @@ class YoutubeDL:
                         return '"' + title + '" title matched reject pattern "' + rejecttitle + '"'
 
             date = info_dict.get('upload_date')
+            if date is None:
+                timestamp = info_dict.get('timestamp')
+                if timestamp is not None:
+                    with contextlib.suppress(ValueError, OverflowError, OSError):
+                        date = dt.datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d')
             if date is not None:
                 date_range = self.params.get('daterange', DateRange())
                 if date not in date_range:
