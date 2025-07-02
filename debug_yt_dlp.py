@@ -32,7 +32,7 @@ ydl_opts = {
     'skip_download': True,
     'quiet': False,
     'verbose': True,
-    'dateafter': '20230101',  # example start date
+    'dateafter': '20250627',  # example start date
     'lazy_playlist': True,
     'break_on_reject': True,
     'extract_flat': True,
