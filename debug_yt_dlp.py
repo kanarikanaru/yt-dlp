@@ -36,8 +36,8 @@ ydl_opts = {
     'skip_download': True,
     'quiet': False,
     'verbose': True,
-    'dateafter': '20250627',  # example start date
-    'lazy_playlist': True,
+    'dateafter': '20250601',  # example start date
+#    'lazy_playlist': True,
     'break_on_reject': True,
     'extract_flat': True,
     'extractor_args': {'youtubetab': {'approximate_date': ['true']}},
