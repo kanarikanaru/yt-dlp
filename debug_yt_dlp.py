@@ -5,20 +5,16 @@ import sys
 # Patch to log API responses
 orig_extract_response = yt_dlp.extractor.youtube._base.YoutubeBaseInfoExtractor._extract_response
 
-
 def debug_extract_response(self, *args, **kwargs):
     print('\n[DEBUG] _extract_response query:', json.dumps(kwargs.get('query'), ensure_ascii=False), file=sys.stderr)
     res = orig_extract_response(self, *args, **kwargs)
     keys = list(res.keys()) if isinstance(res, dict) else type(res)
     print('[DEBUG] _extract_response got keys:', keys, file=sys.stderr)
     return res
-
-
 yt_dlp.extractor.youtube._base.YoutubeBaseInfoExtractor._extract_response = debug_extract_response
 
 # Patch to log daterange checks
 orig_match_entry = yt_dlp.YoutubeDL._match_entry
-
 
 def debug_match_entry(self, info_dict, *args, **kwargs):
     result = orig_match_entry(self, info_dict, *args, **kwargs)
