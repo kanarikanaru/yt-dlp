@@ -2080,6 +2080,10 @@ class YoutubeDL:
 
         failures = 0
         max_failures = self.params.get('skip_playlist_after_errors') or float('inf')
+        # Track whether any entries were rejected or accepted. If everything
+        # was rejected, we should exit with RejectedVideoReached
+        encountered_reject = False
+        downloaded_any = False
         for i, (playlist_index, entry) in enumerate(entries):
             if lazy:
                 resolved_entries.append((playlist_index, entry))
@@ -2097,27 +2101,45 @@ class YoutubeDL:
                 'playlist_autonumber': i + 1,
             })
 
-            if self._match_entry(entry_copy, incomplete=True) is not None:
-                # For compatabilty with youtube-dl. See https://github.com/yt-dlp/yt-dlp/issues/4369
+            try:
+                if self._match_entry(entry_copy, incomplete=True) is not None:
+                    # For compatibilty with youtube-dl. See https://github.com/yt-dlp/yt-dlp/issues/4369
+                    resolved_entries[i] = (playlist_index, NO_DEFAULT)
+                    encountered_reject = True
+                    continue
+            except RejectedVideoReached:
                 resolved_entries[i] = (playlist_index, NO_DEFAULT)
+                encountered_reject = True
                 continue
 
             self.to_screen(
                 f'[download] Downloading item {self._format_screen(i + 1, self.Styles.ID)} '
                 f'of {self._format_screen(n_entries, self.Styles.EMPHASIS)}')
 
-            entry_result = self.__process_iterable_entry(entry, download, collections.ChainMap({
-                'playlist_index': playlist_index,
-                'playlist_autonumber': i + 1,
-            }, extra))
+            try:
+                entry_result = self.__process_iterable_entry(entry, download, collections.ChainMap({
+                    'playlist_index': playlist_index,
+                    'playlist_autonumber': i + 1,
+                }, extra))
+            except RejectedVideoReached:
+                encountered_reject = True
+                resolved_entries[i] = (playlist_index, NO_DEFAULT)
+                continue
             if not entry_result:
                 failures += 1
+            else:
+                downloaded_any = True
             if failures >= max_failures:
                 self.report_error(
                     f'Skipping the remaining entries in playlist "{title}" since {failures} items failed extraction')
                 break
             if keep_resolved_entries:
                 resolved_entries[i] = (playlist_index, entry_result)
+
+        # Only raise break_on_reject if none of the entries were processed
+        # successfully. Otherwise, rejected videos are simply skipped
+        if encountered_reject and not downloaded_any:
+            raise RejectedVideoReached
 
         # Update with processed data
         ie_result['entries'] = [e for _, e in resolved_entries if e is not NO_DEFAULT]
