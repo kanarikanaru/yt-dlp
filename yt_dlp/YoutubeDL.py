@@ -2080,6 +2080,8 @@ class YoutubeDL:
 
         failures = 0
         max_failures = self.params.get('skip_playlist_after_errors') or float('inf')
+        # Track whether any entries were rejected or accepted. If everything
+        # was rejected, we should exit with RejectedVideoReached
         encountered_reject = False
         downloaded_any = False
         for i, (playlist_index, entry) in enumerate(entries):
@@ -2134,6 +2136,8 @@ class YoutubeDL:
             if keep_resolved_entries:
                 resolved_entries[i] = (playlist_index, entry_result)
 
+        # Only raise break_on_reject if none of the entries were processed
+        # successfully. Otherwise, rejected videos are simply skipped
         if encountered_reject and not downloaded_any:
             raise RejectedVideoReached
 
